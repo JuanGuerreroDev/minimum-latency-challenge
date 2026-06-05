@@ -1,1 +1,8 @@
 /.agents/rules
+
+# Go build artifacts
+*.exe
+
+# Transient server logs from benchmark runs (benchmark.log is kept as deliverable)
+server-out.log
+server-err.log
