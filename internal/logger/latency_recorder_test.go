@@ -14,7 +14,7 @@ import (
 // TestRecordRoundtrip verifica la propiedad de roundtrip (PBT-02): los datos
 // registrados con Record aparecen en el archivo escrito por FlushToFile.
 func TestRecordRoundtrip(t *testing.T) {
-	bl := NewBenchmarkLogger(3)
+	bl := NewLatencyRecorder(3)
 
 	base := time.Date(2026, 6, 4, 12, 0, 0, 0, time.UTC)
 	samples := []time.Duration{
@@ -70,7 +70,7 @@ func TestRecordRoundtrip(t *testing.T) {
 // TestRecordExceedsCapacity verifica que Record crece más allá de la capacidad
 // inicial sin perder datos.
 func TestRecordExceedsCapacity(t *testing.T) {
-	bl := NewBenchmarkLogger(1)
+	bl := NewLatencyRecorder(1)
 	now := time.Now()
 	for i := 0; i < 5; i++ {
 		bl.Record(now, now, time.Microsecond)

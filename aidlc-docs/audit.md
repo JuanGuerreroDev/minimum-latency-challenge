@@ -223,3 +223,125 @@
 **Context**: OPERATIONS - placeholder reached, AI-DLC workflow complete
 
 ---
+
+---
+
+# NEW INTENT — Client Stimulus Mode
+
+## Workspace Detection (New Intent)
+**Timestamp**: 2026-06-13T12:00:00Z
+**User Input**: "Detalles del intent: Necesitamos modificar algo en el entorno del cliente, actualmente estamos haciendo el benchmark, pero no estamos cumpliendo el requerimiento funcional de que podamos enviar el estimulo al servidor en cualquier momento y que este genere el lo, solo se estan enviando cuando se corre el benchmark.La idea es que, podamos enviar, tanto el benchmark como el estimulo en cualquier momento"
+**AI Response**: "New intent initiated. Brownfield project detected — existing codebase from previous AI-DLC cycle (COMPLETE). Existing reverse engineering artifacts found. Proceeding to Requirements Analysis."
+**Context**: INCEPTION - Workspace Detection, Brownfield project, new intent on completed project
+
+---
+
+## Requirements Analysis - Intent Analysis (New Intent)
+**Timestamp**: 2026-06-13T12:05:00Z
+**AI Response**: "Intent Analysis completed for new intent. Request Clarity: Clear. Request Type: Enhancement/Fix. Scope: Single Component (client-side). Complexity: Simple. Depth: Minimal. Gap identified: RF-02 exists but is only exercised inside benchmark loop. Need standalone stimulus client mode. Created requirement-verification-questions-v2.md with 3 questions. Waiting for user answers."
+**Context**: INCEPTION - Requirements Analysis, Step 2-6 completed, awaiting user responses
+
+---
+
+## Requirements Analysis - User Answers Received (New Intent)
+**Timestamp**: 2026-06-13T12:15:00Z
+**User Input**: "Ya respondi las preguntas, revisa"
+**AI Response**: "Read requirement-verification-questions-v2.md. All 3 questions answered. Q1=C (binario interactivo separado), Q2=B (consola + archivo .log configurable), Q3=A (mantener extensiones). No contradictions detected. Generated requirements-v2.md."
+**Context**: INCEPTION - Requirements Analysis, Step 6 gate passed, Step 7 completed
+
+---
+
+## Requirements Analysis - Approval (New Intent)
+**Timestamp**: 2026-06-13T12:25:00Z
+**User Input**: "✅ Approve & Continue"
+**AI Response**: "Requirements approved. Proceeding to Workflow Planning."
+**Context**: INCEPTION - Requirements Analysis approved, moving to Workflow Planning
+
+---
+
+## Workflow Planning (New Intent)
+**Timestamp**: 2026-06-13T12:28:00Z
+**AI Response**: "Workflow plan created. Risk: Low. 2 stages to execute (Code Generation + Build and Test), 7 stages skipped. Enhancement is simple and isolated — no new architecture, no new NFR patterns, single unit of work."
+**Context**: INCEPTION - Workflow Planning completed, awaiting user approval
+
+---
+
+## Workflow Planning - Approval (New Intent)
+**Timestamp**: 2026-06-13T12:35:00Z
+**User Input**: "✅ Approve & Continue"
+**AI Response**: "Workflow plan approved. Proceeding to Code Generation."
+**Context**: INCEPTION - Workflow Planning approved, transitioning to CONSTRUCTION - Code Generation
+
+---
+
+## Code Generation - Part 1: Planning (New Intent)
+**Timestamp**: 2026-06-13T12:37:00Z
+**AI Response**: "Code generation plan created at aidlc-docs/construction/plans/stimulus-code-generation-plan.md. 3 steps: (1) Create cmd/stimulus/main.go with interactive loop, (2) Verify build, (3) Create documentation summary. Waiting for user approval."
+**Context**: CONSTRUCTION - Code Generation Part 1, awaiting approval
+
+---
+
+## Code Generation - Part 1 Approval (New Intent)
+**Timestamp**: 2026-06-13T12:40:00Z
+**User Input**: "✅ Continue to Next Stage"
+**AI Response**: "Plan approved. Executing Code Generation Part 2 — generating cmd/stimulus/main.go."
+**Context**: CONSTRUCTION - Code Generation Part 1 approved, proceeding to Part 2 (Generation)
+
+---
+
+## Code Generation - Part 2: Generation Complete (New Intent)
+**Timestamp**: 2026-06-13T12:45:00Z
+**AI Response**: "Code generation complete. Created cmd/stimulus/main.go. Build verified (exit 0). go vet clean. All existing tests pass (logger, protocol, stats). Documentation summary created."
+**Context**: CONSTRUCTION - Code Generation Part 2 complete, awaiting user approval
+
+---
+
+## Code Generation - Request Changes (New Intent)
+**Timestamp**: 2026-06-13T12:50:00Z
+**User Input**: "🔧 Request Changes\nCambio solicitado: Renombrar BenchmarkLogger → LatencyRecorder en todo el proyecto para respetar el principio de responsabilidad única (SRP) y eliminar acoplamiento semántico al concepto de benchmark.\nJustificación: La estructura BenchmarkLogger tiene como responsabilidad real \"acumular mediciones de latencia y persistirlas a archivo\". Su nombre actual sugiere exclusividad para el benchmark, pero ahora es reutilizada por cmd/stimulus. El rename refleja su responsabilidad genérica sin atar el concepto a un caller específico."
+**AI Response**: "Applying requested changes: renaming BenchmarkLogger → LatencyRecorder and NewBenchmarkLogger → NewLatencyRecorder across 4 files. Renaming source files accordingly."
+**Context**: CONSTRUCTION - Code Generation, applying user-requested refactor
+
+---
+
+## Code Generation - Changes Applied (New Intent)
+**Timestamp**: 2026-06-13T12:55:00Z
+**AI Response**: "Rename applied: BenchmarkLogger → LatencyRecorder, NewBenchmarkLogger → NewLatencyRecorder. Files renamed: benchmark_logger.go → latency_recorder.go, benchmark_logger_test.go → latency_recorder_test.go. References updated in cmd/benchmark/main.go, cmd/stimulus/main.go, internal/logger/logger.go. Build, vet, tests all pass."
+**Context**: CONSTRUCTION - Code Generation, refactor complete
+
+---
+
+## Code Generation - Approval (New Intent)
+**Timestamp**: 2026-06-13T13:00:00Z
+**User Input**: "✅ Continue to Next Stage"
+**AI Response**: "Code generation approved. Proceeding to Build and Test."
+**Context**: CONSTRUCTION - Code Generation approved, transitioning to Build and Test
+
+---
+
+## Build and Test Stage (New Intent)
+**Timestamp**: 2026-06-13T13:10:00Z
+**Build Status**: Success
+**Test Status**: Pass (12/12 unit tests, integration test OK, benchmark regression OK)
+**Integration Test Result**: stimulus.exe → send 0x01 → recv 0x02 → Latency 520µs, log written, graceful shutdown via EOF
+**Benchmark Regression**: p99=555.8µs < 1ms (no degradation)
+**Files Generated**:
+- aidlc-docs/construction/build-and-test/build-and-test-summary.md
+**Context**: CONSTRUCTION - Build and Test complete, all quality gates passed
+
+---
+
+## Build and Test - Approval (New Intent)
+**Timestamp**: 2026-06-13T13:20:00Z
+**User Input**: "✅ Approve & Continue"
+**AI Response**: "Build and Test approved. AI-DLC workflow complete for Intent V2. Operations phase is placeholder — no action needed."
+**Context**: CONSTRUCTION - Build and Test approved. Workflow COMPLETE.
+
+---
+
+## Workflow Complete (Intent V2)
+**Timestamp**: 2026-06-13T13:20:00Z
+**Status**: ✅ COMPLETE
+**Summary**: Intent V2 (Stimulus Client Mode) delivered successfully. New interactive binary `cmd/stimulus/main.go` created, `BenchmarkLogger` renamed to `LatencyRecorder` (SRP), all tests pass, integration verified. p99 in benchmark mode remains < 1ms. Interactive mode has expected jitter due to OS scheduling and timer resolution — documented as expected behavior, not a defect.
+
+---

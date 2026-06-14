@@ -1,5 +1,5 @@
 // Package logger provee logging estructurado (JSON) para el sistema y un
-// BenchmarkLogger buffered para la trazabilidad de mediciones de latencia.
+// LatencyRecorder buffered para la trazabilidad de mediciones de latencia.
 //
 // El logger de sistema se basa en log/slog (stdlib, Go 1.21+) y emite JSON con
 // timestamp ISO 8601, level y message (NFR-LOG-01, PAT-OBS-01, SECURITY-03).

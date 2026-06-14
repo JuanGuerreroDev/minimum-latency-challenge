@@ -9,27 +9,27 @@ import (
 	"github.com/JuanGuerreroDev/minimum-latency-challenge/internal/stats"
 )
 
-// BenchmarkLogger acumula mediciones de latencia en memoria durante el
-// benchmark y las vuelca a un archivo .log al finalizar.
+// LatencyRecorder acumula mediciones de latencia en memoria durante la
+// ejecución y las vuelca a un archivo .log al finalizar.
 //
 // Usa tres slices paralelos pre-allocated en vez de un slice de structs para
 // mejorar la localidad de caché del write path (Record), y para garantizar
 // zero-allocation por iteración: Record solo escribe en posiciones ya
 // reservadas (PAT-OBS-02, PAT-PERF-03, BR-07).
-type BenchmarkLogger struct {
+type LatencyRecorder struct {
 	sendTimes []time.Time
 	recvTimes []time.Time
 	latencies []time.Duration
 	count     int
 }
 
-// NewBenchmarkLogger crea un BenchmarkLogger con los buffers pre-allocated a la
-// capacidad indicada (típicamente el número de iteraciones del benchmark).
-func NewBenchmarkLogger(capacity int) *BenchmarkLogger {
+// NewLatencyRecorder crea un LatencyRecorder con los buffers pre-allocated a la
+// capacidad indicada (típicamente el número de iteraciones de medición).
+func NewLatencyRecorder(capacity int) *LatencyRecorder {
 	if capacity < 0 {
 		capacity = 0
 	}
-	return &BenchmarkLogger{
+	return &LatencyRecorder{
 		sendTimes: make([]time.Time, capacity),
 		recvTimes: make([]time.Time, capacity),
 		latencies: make([]time.Duration, capacity),
@@ -41,7 +41,7 @@ func NewBenchmarkLogger(capacity int) *BenchmarkLogger {
 //
 // Si se supera la capacidad reservada, los slices crecen (append), lo cual solo
 // ocurriría si se registran más mediciones que la capacidad inicial.
-func (bl *BenchmarkLogger) Record(sendTime, recvTime time.Time, latency time.Duration) {
+func (bl *LatencyRecorder) Record(sendTime, recvTime time.Time, latency time.Duration) {
 	if bl.count < len(bl.latencies) {
 		bl.sendTimes[bl.count] = sendTime
 		bl.recvTimes[bl.count] = recvTime
@@ -57,7 +57,7 @@ func (bl *BenchmarkLogger) Record(sendTime, recvTime time.Time, latency time.Dur
 // FlushToFile escribe todas las mediciones registradas más la sección de
 // estadísticas al archivo indicado, usando escritura buffered. Se invoca
 // post-benchmark para no afectar las mediciones (BR-07, NFR-LOG-02).
-func (bl *BenchmarkLogger) FlushToFile(filename string, s *stats.Stats) error {
+func (bl *LatencyRecorder) FlushToFile(filename string, s *stats.Stats) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("logger: no se pudo crear %q: %w", filename, err)
@@ -99,6 +99,6 @@ func (bl *BenchmarkLogger) FlushToFile(filename string, s *stats.Stats) error {
 }
 
 // Count retorna el número de mediciones registradas hasta el momento.
-func (bl *BenchmarkLogger) Count() int {
+func (bl *LatencyRecorder) Count() int {
 	return bl.count
 }

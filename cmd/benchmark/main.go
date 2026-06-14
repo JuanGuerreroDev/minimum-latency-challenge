@@ -46,7 +46,7 @@ func main() {
 
 	log.Info("benchmark started", "addr", addr, "iterations", *iterations)
 
-	benchLog := logger.NewBenchmarkLogger(*iterations)
+	benchLog := logger.NewLatencyRecorder(*iterations)
 	durations, errCount := runBenchmark(conn, *iterations, benchLog)
 
 	s := stats.Calculate(durations)
@@ -71,7 +71,7 @@ func main() {
 // asignaciones durante la medición (PAT-PERF-03).
 //
 // Retorna las duraciones de las iteraciones exitosas y el número de errores.
-func runBenchmark(conn net.Conn, iterations int, benchLog *logger.BenchmarkLogger) ([]time.Duration, int) {
+func runBenchmark(conn net.Conn, iterations int, benchLog *logger.LatencyRecorder) ([]time.Duration, int) {
 	var (
 		stimulus  [protocol.MessageSize]byte
 		readBuf   [protocol.MessageSize]byte
