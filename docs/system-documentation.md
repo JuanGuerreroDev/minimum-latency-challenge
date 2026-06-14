@@ -11,7 +11,7 @@
 
 ### 1.1 Visión general
 
-El sistema consta de dos procesos que se comunican por TCP sobre localhost:
+El sistema consta de tres procesos que se comunican por TCP sobre localhost:
 
 ```
 ┌─────────────────────────┐         TCP (127.0.0.1:8080)        ┌──────────────────────────┐
@@ -20,11 +20,19 @@ El sistema consta de dos procesos que se comunican por TCP sobre localhost:
 │                          │   ◀── 0x02 (Response) ──            │                          │
 │   mide round-trip ns     │                                     │   Reactor Handler        │
 └─────────────────────────┘                                     └──────────────────────────┘
+
+┌─────────────────────────┐         TCP (127.0.0.1:8080)        ┌──────────────────────────┐
+│   cmd/stimulus           │   ── 0x01 (Stimulus) ──▶            │   cmd/server             │
+│   (cliente interactivo)  │                                     │   (gnet event loop)      │
+│                          │   ◀── 0x02 (Response) ──            │                          │
+│   envío ad-hoc (Enter)   │                                     │   Reactor Handler        │
+└─────────────────────────┘                                     └──────────────────────────┘
 ```
 
 No hay infraestructura intermedia (colas, caches, balanceadores): cualquier hop
 adicional incrementaría la latencia. La topología óptima para sub-milisegundo es
-un único salto in-process por proceso.
+un único salto in-process por proceso. El servidor atiende múltiples conexiones
+concurrentes — se puede correr benchmark y stimulus simultáneamente.
 
 ### 1.2 Patrón arquitectónico: Reactor Pattern
 
@@ -44,15 +52,16 @@ El servidor implementa el **Reactor Pattern** sobre la librería
 | Componente | Paquete | Rol | Path |
 |---|---|---|---|
 | Server entry | `cmd/server` | Arranca el event loop, graceful shutdown | hot/cold |
-| Benchmark client | `cmd/benchmark` | Mide latencia round-trip | hot |
+| Benchmark client | `cmd/benchmark` | Mide latencia round-trip (10k iteraciones) | hot |
+| Stimulus client | `cmd/stimulus` | Envío interactivo de estímulos ad-hoc | hot |
 | Reactor Handler | `internal/reactor` | `OnTraffic` responde al estímulo | hot |
 | Protocol Codec | `internal/protocol` | Encode/Decode 1 byte | hot |
 | Stats | `internal/stats` | min/max/avg/p50/p95/p99 | cold |
-| Logger | `internal/logger` | slog JSON + BenchmarkLogger buffered | cold |
+| Logger | `internal/logger` | slog JSON + LatencyRecorder buffered | cold |
 
 Dependencias: `server → reactor, logger, gnet`; `benchmark → protocol, logger,
-stats`; `reactor → protocol, logger, gnet`; los paquetes `protocol`, `stats` y
-`logger` son standalone.
+stats`; `stimulus → protocol, logger, stats`; `reactor → protocol, logger, gnet`;
+los paquetes `protocol`, `stats` y `logger` son standalone.
 
 ### 1.4 Protocolo binario ultra-minimal
 
@@ -106,7 +115,7 @@ Características que preservan la fidelidad de la medición:
 - **`time.Now()`** de Go usa el reloj monotónico del SO (en Windows,
   QueryPerformanceCounter), inmune a ajustes del reloj de pared.
 - **Sin I/O durante la medición**: las trazas se guardan en slices
-  pre-allocated (`BenchmarkLogger.Record`); el archivo `.log` se escribe solo al
+  pre-allocated (`LatencyRecorder.Record`); el archivo `.log` se escribe solo al
   finalizar (BR-07).
 - **Sin output intermedio** (BR-06): el reporte se imprime una sola vez al final.
 - **Skip & continue** (BR-04): una iteración con error se cuenta y se omite; las
@@ -161,8 +170,10 @@ enunciado.
 go mod tidy
 go build -o server.exe ./cmd/server
 go build -o benchmark.exe ./cmd/benchmark
+go build -o stimulus.exe ./cmd/stimulus
 .\server.exe --port=8080                                   # terminal 1
 .\benchmark.exe --host=127.0.0.1 --port=8080 --iterations=10000   # terminal 2
+.\stimulus.exe --host=127.0.0.1 --port=8080 --log=stimulus.log    # o modo interactivo
 ```
 
 Resultados detallados en `docs/results-report.md`.
