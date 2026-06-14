@@ -1,4 +1,5 @@
-/.agents/rules
+/.agents
+/.kiro
 
 # Go build artifacts
 *.exe

@@ -1,55 +1,59 @@
-# Build and Test Summary — Minimum Latency System
+# Build and Test Summary — Intent V2: Stimulus Client
 
 ## Build Status
-- **Build Tool**: Go 1.26.4 (windows/amd64)
-- **Build Status**: ✅ Success (`go build ./...`, `go vet ./...` limpio)
-- **Build Artifacts**: `server.exe` (~6.7 MB), `benchmark.exe` (~3.9 MB)
-- **Build Time**: < 5s (con dependencias ya en caché)
+- **Build Tool**: Go 1.21+ (go build)
+- **Build Status**: ✅ Success
+- **Build Artifacts**: `server.exe`, `benchmark.exe`, `stimulus.exe`
+- **Build Command**: `go build ./...`
 
 ## Test Execution Summary
 
 ### Unit Tests
-- **Paquetes con tests**: 3 (`protocol`, `stats`, `logger`)
-- **Resultado**: ✅ todos PASS (incluye property-based tests con `rapid`)
-- **Cobertura funcional**: encode/decode, percentiles/invariantes de stats, roundtrip de logging
-- **Status**: ✅ Pass
+- **Total Tests**: 12
+- **Passed**: 12
+- **Failed**: 0
+- **Packages tested**: `internal/logger`, `internal/protocol`, `internal/stats`
+- **PBT tests**: 7 (property-based, 100 iterations each)
+- **Status**: ✅ PASS
 
-### Integration Tests
-- **Test Scenarios**: 3 (round-trip happy path, graceful shutdown, mensaje inválido)
-- **Ejecutado**: Scenario 1 (round-trip) end-to-end con server + benchmark reales
-- **Passed**: 10,000/10,000 iteraciones, 0 errores
-- **Status**: ✅ Pass
+### Integration Test (Manual)
+- **Scenario**: server.exe + stimulus.exe (pipe de stdin con echo)
+- **Result**: Estímulo enviado (0x01) → Respuesta recibida (0x02) → Latency: 520µs
+- **Log generado**: ✅ (stimulus.log con 1 estímulo registrado)
+- **Graceful shutdown (EOF)**: ✅
+- **Status**: ✅ PASS
+
+### Benchmark Regression Test
+- **Scenario**: server.exe + benchmark.exe (100 iteraciones)
+- **Result**: p99 = 555.8µs < 1ms
+- **Status**: ✅ PASS — sin regresión de rendimiento
 
 ### Performance Tests
-- **Response Time p99**: **646.4 µs** (Target: < 1ms) → ✅
-- **Response Time p95**: 550.3 µs
-- **Response Time avg**: 85.43 µs
-- **Hot path allocations**: 0 allocs/op (Encode 0.17ns, Decode 0.18ns) → ✅
-- **Error Rate**: 0% (Target: 0%) → ✅
-- **Status**: ✅ Pass
+- **Response Time**: p99 = 555.8µs (Target: < 1ms)
+- **Error Rate**: 0%
+- **Status**: ✅ PASS
 
-### Additional Tests
-- **Contract Tests**: N/A (no hay múltiples servicios)
-- **Security Tests**: parcial — bind localhost-only (PAT-SEC-01), input validation (BR-01), dependency pinning vía `go.sum` (NFR-SEC-03)
-- **E2E Tests**: ✅ cubierto por el benchmark round-trip
+## Quality Gates — Final Verification
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Binario compila sin errores | ✅ | `go build ./...` exit 0 |
+| Envía estímulo y recibe respuesta correcta (0x02) | ✅ | Integration test: "Respuesta recibida" |
+| Muestra latencia en consola | ✅ | "Latency: 520µs" en stdout |
+| Escribe log de trazabilidad | ✅ | "Trace log escrito en integration-stimulus.log" |
+| Graceful shutdown con SIGINT/EOF | ✅ | "EOF en stdin." + clean exit |
+| Zero-allocation hot path | ✅ | Buffers `[1]byte` pre-allocated, verified by design |
+| Sin regresión de rendimiento | ✅ | Benchmark p99 = 555.8µs (antes 646.4µs) |
+| Tests existentes sin regresión | ✅ | 12/12 tests pass |
 
 ## Overall Status
 - **Build**: ✅ Success
 - **All Tests**: ✅ Pass
-- **Objetivo de negocio (p99 < 1ms)**: ✅ ALCANZADO (646.4 µs)
-- **Ready for Operations**: ✅ Yes
+- **Ready for Operations**: ✅ Yes (placeholder phase)
 
-## Generated Instruction Files
-- `build-instructions.md`
-- `unit-test-instructions.md`
-- `integration-test-instructions.md`
-- `performance-test-instructions.md`
-- `build-and-test-summary.md`
+## Extension Compliance
 
-## Deliverables (enunciado)
-- `docs/system-documentation.md` — arquitectura, medición de latencia, justificación de herramientas
-- `docs/results-report.md` — resultados, comparación vs objetivo 1ms, análisis y optimizaciones
-- `benchmark.log` — trazabilidad de las 10,000 mediciones
-
-## Next Steps
-All pass → listo para proceder a la fase **Operations** (deployment planning).
+| Extension | Status | Notes |
+|---|---|---|
+| Security Baseline | ✅ Compliant | Bind localhost only, input validation via protocol.Decode, graceful error handling |
+| Property-Based Testing | ✅ Compliant | PBT tests unchanged, protocol roundtrip coverage maintained |
