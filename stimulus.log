@@ -1,0 +1,8 @@
+# Benchmark Trace Log — Minimum Latency System
+# Iterations recorded: 1
+#
+# SendTime | RecvTime | Latency
+# -----------------------------------------------
+2026-06-13T23:17:18.4906088-05:00 | 2026-06-13T23:17:18.4909628-05:00 | 354µs
+# -----------------------------------------------
+# Summary Statistics

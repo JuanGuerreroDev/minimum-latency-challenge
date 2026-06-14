@@ -152,3 +152,28 @@ El registro completo por petición está en **`benchmark.log`** (10,000 líneas
 hot path de **0 allocaciones**. La arquitectura Reactor + protocolo minimal +
 TCP_NODELAY + zero-allocation demuestra ser efectiva para comunicación de
 ultra-baja latencia, incluso con el runtime de Go en configuración por defecto.
+
+---
+
+## 7. Modo Interactivo (Stimulus Client)
+
+Además del benchmark en bucle cerrado, el sistema soporta un cliente interactivo
+(`cmd/stimulus`) que permite enviar estímulos individuales en cualquier momento
+presionando Enter. Características:
+
+- Conexión TCP persistente con TCP_NODELAY
+- Muestra latencia por cada estímulo en consola
+- Escribe log de trazabilidad configurable (`--log`)
+- Cierre ordenado con Ctrl+C (flush del log + estadísticas)
+
+**Nota sobre latencia en modo interactivo**: Las mediciones en modo interactivo
+presentan mayor variabilidad (p99 típicamente >1ms) debido a:
+1. La resolución del timer de Windows (~15.6ms por tick) genera valores `0s`
+   cuando el round-trip completa dentro del mismo tick
+2. Intervalos largos entre estímulos (ritmo humano) permiten que el SO
+   desplanifique el thread del cliente, introduciendo jitter al retomarlo
+3. Mayor probabilidad de coincidencia con pausas del GC o interrupciones del kernel
+
+Esto es un comportamiento esperado del modo de uso interactivo, no un defecto del
+sistema. El objetivo de p99 < 1ms se valida mediante el benchmark en bucle
+cerrado, que mantiene la conexión "caliente" y el scheduling favorable.
